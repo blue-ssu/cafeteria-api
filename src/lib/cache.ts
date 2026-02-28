@@ -54,3 +54,15 @@ export function setCache<T>(key: string, value: T, ttlMs: number): void {
     expiresAt: Date.now() + ttlMs,
   });
 }
+
+export function clearCacheByPrefix(prefix: string): void {
+  const normalizedPrefix = prefix.startsWith("meal:")
+    ? prefix
+    : `meal:${prefix.replace(/^\//, "")}`;
+
+  for (const key of cacheStore.keys()) {
+    if (key.startsWith(normalizedPrefix)) {
+      cacheStore.delete(key);
+    }
+  }
+}

@@ -28,4 +28,45 @@ export type MealFilter = {
 export type MealQueryError = {
   error: "INVALID_QUERY";
   message: string;
+  details?: string[];
+};
+
+export type MealCreatePayload = {
+  cafeteriaType: CafeteriaType;
+  mealType: MealType;
+  name: string;
+  menu: string[];
+  date: string;
+};
+
+export type MealScrapePayload = {
+  cafeteria: CafeteriaType;
+  date: string;
+};
+
+export type MealScrapeResult = {
+  requested: MealScrapePayload;
+  inserted: number;
+  updated: number;
+  skipped: number;
+  errors?: string[];
+};
+
+export type MealUpdatePayload = {
+  cafeteriaType?: CafeteriaType;
+  mealType?: MealType;
+  name?: string;
+  menu?: string[];
+  date?: string;
+};
+
+export type MealWriteAuthTokenPayload = {
+  sub: number | string;
+  iss: string;
+  [key: string]: unknown;
+};
+
+export type UnauthorizedError = {
+  error: "UNAUTHORIZED" | "INVALID_TOKEN";
+  message: string;
 };

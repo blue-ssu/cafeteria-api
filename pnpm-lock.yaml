@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@bluessu/meal-scraper':
         specifier: ^0.1.0
-        version: 0.1.0
+        version: 0.1.0(zod@4.3.6)
       '@hono/node-server':
         specifier: ^1.19.9
         version: 1.19.9(hono@4.12.3)
@@ -29,6 +29,9 @@ importers:
       hono:
         specifier: ^4.12.3
         version: 4.12.3
+      zod:
+        specifier: ^4.0.0
+        version: 4.3.6
     devDependencies:
       '@types/node':
         specifier: ^20.11.17
@@ -978,14 +981,17 @@ packages:
   zeptomatch@2.1.0:
     resolution: {integrity: sha512-KiGErG2J0G82LSpniV0CtIzjlJ10E04j02VOudJsPyPwNZgGnRKQy7I1R7GMyg/QswnE4l7ohSGrQbQbjXPPDA==}
 
+  zod@4.3.6:
+    resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
+
 snapshots:
 
-  '@bluessu/meal-scraper@0.1.0':
+  '@bluessu/meal-scraper@0.1.0(zod@4.3.6)':
     dependencies:
       axios: 1.13.6
       cheerio: 1.2.0
     optionalDependencies:
-      openai: 4.104.0
+      openai: 4.104.0(zod@4.3.6)
     transitivePeerDependencies:
       - debug
       - encoding
@@ -1676,7 +1682,7 @@ snapshots:
     dependencies:
       wrappy: 1.0.2
 
-  openai@4.104.0:
+  openai@4.104.0(zod@4.3.6):
     dependencies:
       '@types/node': 18.19.130
       '@types/node-fetch': 2.6.13
@@ -1685,6 +1691,8 @@ snapshots:
       form-data-encoder: 1.7.2
       formdata-node: 4.4.1
       node-fetch: 2.7.0
+    optionalDependencies:
+      zod: 4.3.6
     transitivePeerDependencies:
       - encoding
     optional: true
@@ -1910,3 +1918,5 @@ snapshots:
     dependencies:
       grammex: 3.1.12
       graphmatch: 1.1.1
+
+  zod@4.3.6: {}
