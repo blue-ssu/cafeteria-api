@@ -9,6 +9,8 @@ const app = new Hono();
 
 app.use("/*", serveStatic({ root: "./public" }));
 
+const port = Number(process.env.PORT) || 3000;
+
 app.get("/", (c) => {
   return c.text("Hello Hono!");
 });
@@ -19,7 +21,7 @@ registerTableRoute(app);
 serve(
   {
     fetch: app.fetch,
-    port: 3000,
+    port,
   },
   (info) => {
     console.log(`Server is running on http://localhost:${info.port}`);
