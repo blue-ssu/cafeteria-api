@@ -213,7 +213,6 @@ curl -X POST http://localhost:3000/api/scrape-meals \
 - `/table` : 식단 조회/수정 UI
 - `/playground.html` : 조회 API 테스트용 플레이그라운드 (GET 전용)
 - `/table.html`, `/table.css`, `/table.js` 등 직접 접근 가능
-- `/manifest.json`, `/manifast.json` 접근 가능
 
 ## 에러 응답
 
@@ -247,5 +246,5 @@ curl -X POST http://localhost:3000/api/scrape-meals \
 ## 라이선스/저장소
 
 - 오픈소스 프로젝트
-- GitHub: `https://github.com/blue-ssu/meal-api`
+- GitHub: `https://github.com/blue-ssu/cafeteria-api`
 - 더 자세한 기여 가이드는 추후 업데이트 예정
