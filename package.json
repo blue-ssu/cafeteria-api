@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.19.9",
+    "@bluessu/meal-scraper": "^0.1.0",
     "hono": "^4.12.3"
   },
   "devDependencies": {
