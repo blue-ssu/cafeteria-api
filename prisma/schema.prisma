@@ -8,21 +8,16 @@ datasource db {
 }
 
 enum CafeteriaType {
-  HAKSIK
-  DODAM
-  FACULTY
-  DORMITORY
+  haksik
+  dodam
+  faculty
+  dormitory
 }
 
 enum MealType {
-  BREAKFAST
-  LUNCH
-  DINNER
-}
-
-enum CafeteriaStatus {
-  OPEN
-  CLOSED
+  breakfast
+  lunch
+  dinner
 }
 
 model Meal {
