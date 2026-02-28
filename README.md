@@ -1,7 +1,7 @@
-# Meal API
+# Cafeteria API
 
 <p align="left">
-  <img src="public/icon-background.png" alt="Meal API Banner" width="900" />
+  <img src="public/icon-background.png" alt="Cafeteria API Banner" width="900" />
 </p>
 
 숭실대학교 학식 데이터를 조회·관리하는 오픈소스 REST API입니다.
