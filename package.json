@@ -3,17 +3,30 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js"
+    "build": "prisma generate && tsc",
+    "start": "node dist/index.js",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "prisma db seed",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.9",
     "@bluessu/meal-scraper": "^0.1.0",
+    "@prisma/adapter-better-sqlite3": "^7.0.0",
+    "@prisma/client": "^7.0.0",
+    "better-sqlite3": "^11.0.0",
+    "dotenv": "^16.4.7",
     "hono": "^4.12.3"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",
+    "prisma": "^7.0.0",
     "tsx": "^4.7.1",
     "typescript": "^5.8.3"
+  },
+  "prisma": {
+    "seed": "tsx ./prisma/seed.ts"
   }
 }

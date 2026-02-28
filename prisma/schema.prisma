@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum CafeteriaType {
+  HAKSIK
+  DODAM
+  FACULTY
+  DORMITORY
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+}
+
+enum CafeteriaStatus {
+  OPEN
+  CLOSED
+}
+
+model Meal {
+  id            String        @id @default(cuid())
+  cafeteriaType CafeteriaType
+  mealType      MealType
+  name          String
+  menu          Json
+  date          DateTime
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
