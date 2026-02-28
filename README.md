@@ -33,8 +33,22 @@ pnpm db:seed
 pnpm run dev
 ```
 
-## DB 동작 확인 API
+## API
 
-- `GET /meals` : 저장된 식단 목록 조회
+- `GET /api/meals` : 식단 목록 조회 (`cafeteria` 필수)
 
-로컬 실행 후 `http://localhost:3000/meals`를 호출해서 결과를 확인하세요.
+로컬 실행 후 `http://localhost:3000/api/meals?cafeteria=haksik` 을 호출해 결과를 확인하세요.
+
+### 쿼리 옵션
+- `cafeteria`: `haksik | dodam | faculty | dormitory` (필수)
+- `mealType`: `breakfast | lunch | dinner` (선택)
+- 날짜 조회:
+  - `date=YYYY-MM-DD` : 특정 날짜 조회
+  - `startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` : 기간 조회 (종료일 포함)
+  - 미지정 시 `Asia/Seoul` 기준 오늘 조회
+- `mealType`이나 날짜 포맷이 유효하지 않으면 `400` + `{ "error":"INVALID_QUERY", "message":"..." }` 로 응답
+
+### 캐시
+- 간단한 인메모리 캐시 사용
+- 캐시 키: `meal:query:{cafeteria}:{mealType|all}:{rangeStart}:{rangeEnd}`
+- TTL: 5분 (300초)
