@@ -1,120 +1,251 @@
-# meal-api
+# Meal API
 
-## WIP (Working In Progress)
-현재 개발 중인 프로젝트입니다.
+<p align="left">
+  <img src="public/icon-background.png" alt="Meal API Banner" width="900" />
+</p>
 
-## 설치
+숭실대학교 학식 데이터를 조회·관리하는 오픈소스 REST API입니다.
+
+## 목차
+
+- [기능](#기능)
+- [시작하기](#시작하기)
+- [환경 변수](#환경-변수)
+- [실행 방법](#실행-방법)
+- [API 엔드포인트](#api-엔드포인트)
+- [정적 페이지](#정적-페이지)
+- [에러 응답](#에러-응답)
+- [캐시 정책](#캐시-정책)
+- [데이터베이스](#데이터베이스)
+- [라이선스/저장소](#라이선스저장소)
+
+## 기능
+
+- `cafeteria`, `mealType`, `date` 기반 식단 조회
+- 단일 식사 조회
+- 작성/수정/삭제(쓰기 API)
+- 스크래퍼 연동으로 메뉴 수집 저장
+- 간단한 인메모리 캐시(TTL 5분)
+- 브라우저 기반 관리 UI 제공
+  - `/table` : 조회/편집/저장
+  - `/playground.html` : 조회 API용 플레이그라운드
+- 인증 기반 쓰기 API (`Bearer Token`, JWT)
+
+## 시작하기
+
+```bash
+git clone <repo-url>
+cd meal-api
+npm install
+```
+
+또는 `pnpm` 사용 시:
 
 ```bash
 pnpm install
 ```
 
-`prisma`와 `@prisma/client`를 추가하고 SQLite가 준비됩니다.
-
 ## 환경 변수
 
-`DATABASE_URL`은 반드시 설정해야 합니다.
+루트에 `.env` 파일을 만들고 아래 값을 설정하세요.
 
 ```bash
 cp .env.example .env
 ```
 
-`DATABASE_URL` 예시:
-- `file:./prisma/dev.db`
+필수 항목:
 
-## Prisma 초기화
+- `DATABASE_URL` (예: `file:./prisma/dev.db`)
+- `JWT_SECRET` (쓰기 API(`POST /api/meals`, `PATCH /api/meals/:mealId`, `DELETE /api/meals/:mealId`, `POST /api/scrape-meals`) 인증용)
 
-```bash
-pnpm db:generate
-pnpm db:push
-pnpm db:seed
-```
+스크랩 연동 사용 시:
 
-## 개발 서버
+- `GPT_API_KEY` (dormitory 이외 식당)
+
+## 실행 방법
 
 ```bash
-pnpm run dev
+# Prisma Client 생성
+npm run db:generate
+
+# 스키마 반영/DB 생성
+npm run db:push
+
+# 개발 서버
+npm run dev
 ```
 
-## API
+빌드 후 실행:
 
-- `GET /api/meals` : 식단 목록 조회 (`cafeteria` 필수)
-- `GET /api/meals/:mealId` : 단일 식단 조회
-- `POST /api/meals` : 식단 생성
-- `PATCH /api/meals/:mealId` : 단일 식단 부분 수정
-- `POST /api/scrape-meals` : @bluessu/meal-scraper로 스크랩 후 식단 저장
-- `GET /table` : 조회/수정용 테이블 UI
-- `GET /table`은 서버 렌더링이 아닌 정적 `table.html`(클라이언트에서 API 호출) 기반 화면입니다.
+```bash
+npm run build
+npm run start
+```
 
-로컬 실행 후 `http://localhost:3000/api/meals?cafeteria=haksik` 을 호출해 결과를 확인하세요.
+기본 URL: `http://localhost:3000`
 
-### 쿼리 옵션
-- `cafeteria`: `haksik | dodam | faculty | dormitory` (필수)
-- `mealType`: `breakfast | lunch | dinner` (선택)
-- 날짜 조회:
-  - `date=YYYY-MM-DD` : 특정 날짜 조회
-  - `startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` : 기간 조회 (종료일 포함)
-  - 미지정 시 `Asia/Seoul` 기준 오늘 조회
-- `mealType`이나 날짜 포맷이 유효하지 않으면 `400` + `{ "error":"INVALID_QUERY", "message":"..." }` 로 응답
+## API 엔드포인트
 
-### 캐시
-- 간단한 인메모리 캐시 사용
-- 캐시 키: `meal:query:{cafeteria}:{mealType|all}:{rangeStart}:{rangeEnd}`
-- TTL: 5분 (300초)
+### 공통
 
-### 요청 예시
+- 기본 날짜 기준: `Asia/Seoul`
+- 날짜 포맷: `YYYY-MM-DD`
+- 쿼리/페이로드 유효성 실패: `400 INVALID_QUERY`
+- 인증 실패: `401 UNAUTHORIZED` 또는 `401 INVALID_TOKEN`
+
+### 조회 API
+
+#### GET /api/meals
+
+식단 목록 조회.
+
+쿼리:
+
+- `cafeteria` (필수): `haksik | dodam | faculty | dormitory`
+- `mealType` (선택): `breakfast | lunch | dinner`
+- `date` (선택): `YYYY-MM-DD`
+- `startDate` + `endDate` (선택): `YYYY-MM-DD`
+  - 기간 조회 모드에서 사용
+  - 종료일은 포함
+- 기간 조회와 단일 조회는 동시에 사용하지 않음
+
+예시:
+
+```bash
+curl "http://localhost:3000/api/meals?cafeteria=haksik&mealType=lunch&date=2026-02-28"
+```
+
+```bash
+curl "http://localhost:3000/api/meals?cafeteria=haksik&startDate=2026-02-24&endDate=2026-02-26"
+```
+
+#### GET /api/meals/:mealId
+
+단일 식단 조회.
+
+### 쓰기 API (인증 필요)
+
+요청 헤더:
+
+- `Authorization: Bearer <token>`
+- JWT payload 조건:
+  - `sub === -1`
+  - `iss === "ssu.blue"`
+
+서버의 서명 키: `JWT_SECRET`
 
 #### POST /api/meals
-```json
-{
-  "cafeteriaType": "haksik",
-  "mealType": "lunch",
-  "name": "한식 도시락",
-  "menu": ["김치찌개", "공기밥"],
-  "date": "2026-02-28"
-}
+
+식단 생성. 동일 `cafeteria + mealType + name + date` 조합은 업데이트 처리(덮어쓰기).
+
+요청:
+
+```bash
+curl -X POST http://localhost:3000/api/meals \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{
+    "cafeteriaType":"haksik",
+    "mealType":"lunch",
+    "name":"한식 도시락",
+    "menu":["김치찌개","공기밥","김치"],
+    "date":"2026-02-28"
+  }'
 ```
 
 #### PATCH /api/meals/:mealId
-```json
-{
-  "name": "새로운 메뉴 이름",
-  "menu": ["비빔밥", "된장국"]
-}
+
+부분 수정.
+
+```bash
+curl -X PATCH http://localhost:3000/api/meals/<mealId> \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{ "menu": ["비빔밥","된장국"] }'
+```
+
+#### DELETE /api/meals/:mealId
+
+단일 식사 삭제.
+
+```bash
+curl -X DELETE http://localhost:3000/api/meals/<mealId> \
+  -H "Authorization: Bearer <token>"
 ```
 
 #### POST /api/scrape-meals
-```json
-{
-  "cafeteria": "dodam",
-  "date": "2026-02-28"
-}
+
+스크랩 파이프라인을 통해 메뉴 수집 후 저장.
+
+```bash
+curl -X POST http://localhost:3000/api/scrape-meals \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{ "cafeteria":"dodam", "date":"2026-02-28" }'
 ```
 
-##### 스크랩 응답 예시
+응답 예시:
+
 ```json
 {
   "requested": {
     "cafeteria": "dodam",
     "date": "2026-02-28"
   },
-  "inserted": 3,
+  "inserted": 2,
   "updated": 1,
   "skipped": 0,
   "errors": []
 }
 ```
 
-> 동작 방식
-> - `cafeteria`가 `dormitory`가 아닌 경우 `parser: "gpt"`로 스크랩
-> - `dormitory`는 `parser: "noop"`로 스크랩
-> - 스크랩 결과는 `cafeteria`, `mealType`, `name`, `menu`, `date` 기준으로 덮어쓰기 처리
-> - 쓰기 API와 동일하게 `Authorization: Bearer <JWT>` 인증이 필요 (`sub=-1`, `iss=ssu.blue`)
+동작 규칙:
 
-### 에러 응답
-- 요청 검증 실패: `400`
-  - `{ "error":"INVALID_QUERY", "message":"Invalid payload.", "details":[ ... ] }`
-- 인증 실패: `401`
-  - `{ "error":"UNAUTHORIZED" | "INVALID_TOKEN", ... }`
-- 대상 없음: `404`
-  - `{ "error":"NOT_FOUND", "message":"Meal not found." }`
+- `dormitory`는 `parser: "noop"`, 나머지는 `parser: "gpt"`
+- 스크랩 결과는 `cafeteria + mealType + name + date` 단위로 저장/갱신
+- `menu`가 빈 값이거나 유효하지 않으면 저장 제외
+
+## 정적 페이지
+
+정적 파일은 루트에서 서빙됩니다(`public`).
+
+- `/` : 랜딩 페이지 (`index.html`)
+- `/table` : 식단 조회/수정 UI
+- `/playground.html` : 조회 API 테스트용 플레이그라운드 (GET 전용)
+- `/table.html`, `/table.css`, `/table.js` 등 직접 접근 가능
+- `/manifest.json`, `/manifast.json` 접근 가능
+
+## 에러 응답
+
+### 공통 형식
+
+- `400`
+  - `{"error":"INVALID_QUERY","message":"..."}`  
+  - `details`가 추가될 수 있음(검증 실패 상세)
+- `401`
+  - `{"error":"UNAUTHORIZED","message":"Authentication required."}`
+  - 또는 `{"error":"INVALID_TOKEN","message":"Invalid or expired token."}`
+- `404`
+  - `{"error":"NOT_FOUND","message":"Meal not found."}`
+
+요청 페이로드 검증은 `zod v4` 기반으로 수행됩니다.
+
+## 캐시 정책
+
+- 조회 캐시 키: `meal:query:{cafeteria}:{mealType|all}:{rangeStart}:{rangeEnd}`
+- TTL: 5분 (`300000ms`)
+- 쓰기/삭제/스크랩 시 조회 캐시 무효화
+
+## 데이터베이스
+
+- ORM: Prisma
+- DB: SQLite
+- 모델 핵심:
+  - `Meal`:
+    - `cafeteriaType`, `mealType`, `name`, `menu(Json)`, `date`
+
+## 라이선스/저장소
+
+- 오픈소스 프로젝트
+- GitHub: `https://github.com/blue-ssu/meal-api`
+- 더 자세한 기여 가이드는 추후 업데이트 예정
