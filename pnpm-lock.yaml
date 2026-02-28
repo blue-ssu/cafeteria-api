@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@bluessu/meal-scraper':
-        specifier: ^0.1.0
-        version: 0.1.0(zod@4.3.6)
+        specifier: ^0.1.1
+        version: 0.1.1(zod@4.3.6)
       '@hono/node-server':
         specifier: ^1.19.9
         version: 1.19.9(hono@4.12.3)
@@ -48,8 +48,8 @@ importers:
 
 packages:
 
-  '@bluessu/meal-scraper@0.1.0':
-    resolution: {integrity: sha512-N1NdU0XfH6fFPSbFA0ZIPCBACHtBBVts4tn2MCwWXfHECPw8K9NFrzuIwlB98N8hUJF4YX5UVGDHWGwj6Hkzag==}
+  '@bluessu/meal-scraper@0.1.1':
+    resolution: {integrity: sha512-EGvgbw7FPv3bY/bIBdSoZewp0SEI/ja17sEAh0QPprC1PiuLMeDqHp1ndWeVO2cXSUOpMhQB9xCSOFrKRLo46A==}
     engines: {node: '>=18'}
 
   '@chevrotain/cst-dts-gen@10.5.0':
@@ -986,7 +986,7 @@ packages:
 
 snapshots:
 
-  '@bluessu/meal-scraper@0.1.0(zod@4.3.6)':
+  '@bluessu/meal-scraper@0.1.1(zod@4.3.6)':
     dependencies:
       axios: 1.13.6
       cheerio: 1.2.0
