@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meal API Playground | BlueSSU</title>
+  <style>
+    :root {
+      --line: #121212;
+      --bg: #ffffff;
+      --muted: #666;
+      --card: #f8f8f8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 24px;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--line);
+      background: var(--bg);
+    }
+
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 26px;
+    }
+
+    .desc {
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      padding: 16px;
+      background: var(--card);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    label {
+      font-size: 14px;
+    }
+
+    select,
+    input,
+    button {
+      height: 36px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--line);
+      padding: 0 10px;
+    }
+
+    button {
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .status {
+      margin-top: 8px;
+      min-height: 20px;
+      font-size: 13px;
+    }
+
+    .status.ok {
+      color: #1f8a4d;
+    }
+
+    .status.error {
+      color: #a10000;
+    }
+
+    .result-box {
+      margin-top: 16px;
+    }
+
+    pre {
+      margin: 0;
+      border: 1px solid var(--line);
+      padding: 12px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      background: #fff;
+      min-height: 180px;
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+    }
+
+    .top-link {
+      display: inline-flex;
+      margin-bottom: 14px;
+      color: var(--line);
+    }
+
+    @media (max-width: 860px) {
+      .row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <a class="top-link" href="/" aria-label="home">← 홈으로</a>
+    <h1>Meal API Playground</h1>
+    <div class="desc">조회 API 전용 플레이그라운드: `/api/meals`의 쿼리를 선택해 실제 요청/응답을 바로 확인할 수 있습니다.</div>
+
+    <section class="panel">
+      <div class="row">
+        <div class="field">
+          <label for="cafeteria">식당 (필수)</label>
+          <select id="cafeteria">
+            <option value="haksik">haksik</option>
+            <option value="dodam">dodam</option>
+            <option value="faculty">faculty</option>
+            <option value="dormitory">dormitory</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="mealType">식사 구분</label>
+          <select id="mealType">
+            <option value="">전체</option>
+            <option value="breakfast">breakfast</option>
+            <option value="lunch">lunch</option>
+            <option value="dinner">dinner</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="dateMode">날짜 조회 모드</label>
+          <select id="dateMode">
+            <option value="single">단일 날짜</option>
+            <option value="range">기간</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="date">date (YYYY-MM-DD)</label>
+          <input id="date" type="date" />
+        </div>
+
+        <div class="field">
+          <label for="startDate">startDate (YYYY-MM-DD)</label>
+          <input id="startDate" type="date" />
+        </div>
+
+        <div class="field">
+          <label for="endDate">endDate (YYYY-MM-DD)</label>
+          <input id="endDate" type="date" />
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="runBtn" type="button">요청 실행</button>
+      </div>
+
+      <div class="status" id="status"></div>
+
+      <div class="field">
+        <label for="urlPreview">요청 URL</label>
+        <input id="urlPreview" type="text" readonly />
+      </div>
+
+    </section>
+
+    <section class="result-box">
+      <h2>응답</h2>
+      <pre id="response" class="mono">응답을 실행하면 결과가 표시됩니다.</pre>
+    </section>
+  </main>
+
+  <script>
+    const controls = {
+      cafeteria: document.getElementById("cafeteria"),
+      mealType: document.getElementById("mealType"),
+      dateMode: document.getElementById("dateMode"),
+      date: document.getElementById("date"),
+      startDate: document.getElementById("startDate"),
+      endDate: document.getElementById("endDate"),
+      runBtn: document.getElementById("runBtn"),
+      status: document.getElementById("status"),
+      urlPreview: document.getElementById("urlPreview"),
+      response: document.getElementById("response"),
+    };
+
+    function todayYmd() {
+      return new Date().toLocaleDateString("en-CA");
+    }
+
+    function setDateModeState() {
+      const isRange = controls.dateMode.value === "range";
+      controls.date.disabled = isRange;
+      controls.startDate.disabled = !isRange;
+      controls.endDate.disabled = !isRange;
+
+      if (!isRange) {
+        controls.startDate.value = "";
+        controls.endDate.value = "";
+        if (!controls.date.value) {
+          controls.date.value = todayYmd();
+        }
+      } else {
+        controls.date.value = "";
+      }
+    }
+
+    function buildRequestInfo() {
+      const params = new URLSearchParams();
+      params.set("cafeteria", controls.cafeteria.value);
+
+      const mealType = controls.mealType.value;
+      if (mealType) {
+        params.set("mealType", mealType);
+      }
+
+      const isRange = controls.dateMode.value === "range";
+      const date = controls.date.value;
+      const startDate = controls.startDate.value;
+      const endDate = controls.endDate.value;
+
+      if (isRange) {
+        if (!startDate || !endDate) {
+          return { url: "", error: "기간 조회는 시작일과 종료일이 모두 필요합니다." };
+        }
+        if (startDate > endDate) {
+          return { url: "", error: "startDate는 endDate보다 클 수 없습니다." };
+        }
+        params.set("startDate", startDate);
+        params.set("endDate", endDate);
+      } else if (date) {
+        params.set("date", date);
+      }
+
+      const url = `/api/meals?${params.toString()}`;
+      return { url, error: null };
+    }
+
+    function setStatus(message, tone = "ok") {
+      controls.status.textContent = message;
+      controls.status.className = `status ${tone}`;
+    }
+
+    function setPreview(url) {
+      controls.urlPreview.value = `${window.location.origin}${url}`;
+    }
+
+    function refreshRequestPreview() {
+      try {
+        const { url, error } = buildRequestInfo();
+        if (error) {
+          controls.runBtn.disabled = true;
+          setPreview("");
+          setStatus(error, "error");
+          return;
+        }
+
+        setPreview(url);
+        controls.runBtn.disabled = false;
+        setStatus("요청이 준비되었습니다.", "ok");
+      } catch (error) {
+        controls.runBtn.disabled = true;
+        setPreview("");
+        setStatus(error?.message || "요청 생성 실패", "error");
+      }
+    }
+
+    controls.dateMode.addEventListener("change", () => {
+      setDateModeState();
+      refreshRequestPreview();
+    });
+
+    controls.cafeteria.addEventListener("change", refreshRequestPreview);
+    controls.mealType.addEventListener("change", refreshRequestPreview);
+    controls.date.addEventListener("change", refreshRequestPreview);
+    controls.startDate.addEventListener("change", refreshRequestPreview);
+    controls.endDate.addEventListener("change", refreshRequestPreview);
+    // HTML input 이벤트까지 반응해 입력 중에도 실시간 업데이트
+    controls.date.addEventListener("input", refreshRequestPreview);
+    controls.startDate.addEventListener("input", refreshRequestPreview);
+    controls.endDate.addEventListener("input", refreshRequestPreview);
+
+    controls.runBtn.addEventListener("click", async () => {
+      const requestUrl = controls.urlPreview.value;
+      if (!requestUrl) return;
+      controls.response.textContent = "요청 중...";
+      try {
+        setStatus("요청 중...", "ok");
+        const res = await fetch(requestUrl);
+        const text = await res.text();
+        let parsed = text;
+        try {
+          const json = JSON.parse(text);
+          parsed = JSON.stringify(json, null, 2);
+        } catch {
+          // no-op
+        }
+        controls.response.textContent = parsed || "빈 응답";
+        if (!res.ok) {
+          setStatus(`응답 오류 (${res.status})`, "error");
+        } else {
+          setStatus("응답 성공", "ok");
+        }
+      } catch (error) {
+        controls.response.textContent = String(error?.message || error);
+        setStatus("요청 실패", "error");
+      }
+    });
+
+    setDateModeState();
+    controls.date.value = todayYmd();
+    refreshRequestPreview();
+  </script>
+</body>
+
+</html>
